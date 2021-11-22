@@ -1,0 +1,22 @@
+{
+  "name": "nodejs-start",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Giorgospago/nodejs-starter.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Giorgospago/nodejs-starter/issues"
+  },
+  "homepage": "https://github.com/Giorgospago/nodejs-starter#readme",
+  "dependencies": {
+    "chalk": "^4.1.2"
+  }
+}
