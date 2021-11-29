@@ -38,14 +38,63 @@ app.get("/superleague", (req, res) => {
         .find({})
         .sort({points: -1})
         .then(teams => {
-            res.json(teams);
+            res.json({
+                success: true,
+                message: "Teams fetched successfully",
+                data: teams
+            });
+        });
+});
+
+app.get("/superleague/:teamId", (req, res) => {
+    SuperLeague
+        .findById(req.params.teamId)
+        .then(team => {
+            res.json({
+                success: true,
+                message: team.name + " fetched successfully",
+                data: team
+            });
+        });
+});
+app.delete("/superleague/:teamId", (req, res) => {
+    SuperLeague
+        .deleteOne({_id: req.params.teamId})
+        .then(result => {
+            if (result.deletedCount === 1) {
+                res.json({
+                    success: true,
+                    message: "Deleted successfully"
+                });
+            } else {
+                res.json({
+                    success: false,
+                    message: "Nothing to delete"
+                });
+            }
+        });
+});
+app.put("/superleague/:teamId", (req, res) => {
+    SuperLeague
+        .updateOne(
+            {_id: req.params.teamId},
+            req.body
+        )
+        .then(team => {
+            res.json({
+                success: true,
+                message: "Updated successfully"
+            });
         });
 });
 
 app.post("/create", (req, res) => {
     const team = new SuperLeague(req.body);
     team.save();
-    res.json({success: true});
+    res.json({
+        success: true,
+        message: "Created successfully"
+    });
 });
 
 app.listen(port, () => {
