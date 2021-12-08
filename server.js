@@ -36,6 +36,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 
+app.get("/", (req, res) => {
+    res.json({
+        success: true,
+        message: "Hello Delta"
+    });
+});
+
 app.get("/superleague", (req, res) => {
     SuperLeague
         .find({})
