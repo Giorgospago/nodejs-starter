@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = process.env.PORT;
 
 mongoose.connect(process.env.MONGODB_URI);
 
@@ -14,21 +14,6 @@ const SuperLeague = mongoose.model("SuperLeague", {
     points: {type: Number},
     deleted: {type: Boolean, default: false}
 });
-
-/*
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + "/views/home.html");
-});
-app.get('/about', (req, res) => {
-    res.sendFile(__dirname + "/views/about.html");
-});
-app.get('/contact', (req, res) => {
-    res.sendFile(__dirname + "/views/contact.html");
-});
-app.get('/products', (req, res) => {
-    res.sendFile(__dirname + "/views/products.html");
-});
-*/
 
 app.use(cors());
 // parse application/x-www-form-urlencoded
@@ -106,6 +91,25 @@ app.post("/create", (req, res) => {
         message: "Created successfully"
     });
 });
+
+
+app.get("/search", (req, res) => {  
+    const key = req.query.key;
+
+    SuperLeague
+        .find({
+            name: {$regex: key, $options: "i"}
+        })
+        .sort({points: -1})
+        .then(teams => {
+            res.json({
+                success: true,
+                message: "Search results",
+                data: teams
+            });
+        });
+});
+
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);
