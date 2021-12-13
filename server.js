@@ -1,19 +1,13 @@
 require('dotenv').config();
-const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const express = require('express');
+const renderPug = require("./library/pug");
+const Mailer = require("./library/mailer");
+const {SuperLeague} = require("./library/models");
+
 const app = express();
 const port = process.env.PORT;
-
-mongoose.connect(process.env.MONGODB_URI);
-
-const SuperLeague = mongoose.model("SuperLeague", {
-    name: {type: String},
-    logo: {type: String},
-    points: {type: Number},
-    deleted: {type: Boolean, default: false}
-});
 
 app.use(cors());
 // parse application/x-www-form-urlencoded
@@ -22,6 +16,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.get("/", (req, res) => {
+    
+    Mailer.sendMail({
+        from: '"Fred Foo 👻" <foo@example.com>',
+        to: "bar@example.com, baz@example.com",
+        subject: "Hello ✔",
+        html: "<h1 style='color: red'>Hello world?</b>",
+    });
+    
     res.json({
         success: true,
         message: "Hello Delta !!!!!"
@@ -69,6 +71,7 @@ app.delete("/superleague/:teamId", (req, res) => {
             }
         });
 });
+
 app.put("/superleague/:teamId", (req, res) => {
     SuperLeague
         .updateOne(
@@ -86,12 +89,23 @@ app.put("/superleague/:teamId", (req, res) => {
 app.post("/create", (req, res) => {
     const team = new SuperLeague(req.body);
     team.save();
+
+    Mailer.sendMail({
+        from: '"Super League Admin" <info@superleague.gr>',
+        to: "teams@superleague.gr",
+        subject: `Team ${team.name} just created.`,
+        html: renderPug(__dirname + "/pugs/welcome.pug", {
+            name: team.name,
+            points: team.points,
+            logo: team.logo
+        })
+    });
+
     res.json({
         success: true,
         message: "Created successfully"
     });
 });
-
 
 app.get("/search", (req, res) => {  
     const key = req.query.key;
