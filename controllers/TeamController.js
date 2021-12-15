@@ -1,36 +1,8 @@
-require('dotenv').config();
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const express = require('express');
-const renderPug = require("./library/pug");
-const Mailer = require("./library/mailer");
-const {SuperLeague} = require("./library/models");
+const {SuperLeague} = require("../library/models");
+const renderPug = require("../library/pug");
+const Mailer = require("../library/mailer");
 
-const app = express();
-const port = process.env.PORT;
-
-app.use(cors());
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }));
-// parse application/json
-app.use(bodyParser.json());
-
-app.get("/", (req, res) => {
-    
-    Mailer.sendMail({
-        from: '"Fred Foo 👻" <foo@example.com>',
-        to: "bar@example.com, baz@example.com",
-        subject: "Hello ✔",
-        html: "<h1 style='color: red'>Hello world?</b>",
-    });
-    
-    res.json({
-        success: true,
-        message: "Hello Delta !!!!!"
-    });
-});
-
-app.get("/superleague", (req, res) => {
+const fetchTeams = (req, res) => {
     SuperLeague
         .find({})
         .sort({points: -1})
@@ -41,9 +13,8 @@ app.get("/superleague", (req, res) => {
                 data: teams
             });
         });
-});
-
-app.get("/superleague/:teamId", (req, res) => {
+};
+const fetchTeam = (req, res) => {
     SuperLeague
         .findById(req.params.teamId)
         .then(team => {
@@ -53,8 +24,8 @@ app.get("/superleague/:teamId", (req, res) => {
                 data: team
             });
         });
-});
-app.delete("/superleague/:teamId", (req, res) => {
+};
+const deleteTeam = (req, res) => {
     SuperLeague
         .deleteOne({_id: req.params.teamId})
         .then(result => {
@@ -70,9 +41,8 @@ app.delete("/superleague/:teamId", (req, res) => {
                 });
             }
         });
-});
-
-app.put("/superleague/:teamId", (req, res) => {
+};
+const updateTeam = (req, res) => {
     SuperLeague
         .updateOne(
             {_id: req.params.teamId},
@@ -84,17 +54,21 @@ app.put("/superleague/:teamId", (req, res) => {
                 message: "Updated successfully"
             });
         });
-});
-
-app.post("/create", (req, res) => {
-    const team = new SuperLeague(req.body);
+};
+const createTeam = (req, res) => {
+    const obj = {
+        name: req.body.name,
+        points: req.body.points,
+        logo: process.env.HOST + "/uploads/" + req.file.filename
+    };
+    const team = new SuperLeague(obj);
     team.save();
 
     Mailer.sendMail({
         from: '"Super League Admin" <info@superleague.gr>',
         to: "teams@superleague.gr",
         subject: `Team ${team.name} just created.`,
-        html: renderPug(__dirname + "/pugs/welcome.pug", {
+        html: renderPug(__dirname + "/../pugs/welcome.pug", {
             name: team.name,
             points: team.points,
             logo: team.logo
@@ -105,9 +79,8 @@ app.post("/create", (req, res) => {
         success: true,
         message: "Created successfully"
     });
-});
-
-app.get("/search", (req, res) => {  
+};
+const searchTeams = (req, res) => {  
     const key = req.query.key;
 
     SuperLeague
@@ -122,9 +95,13 @@ app.get("/search", (req, res) => {
                 data: teams
             });
         });
-});
+};
 
-
-app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`);
-});
+module.exports = {
+    fetchTeams,
+    fetchTeam,
+    createTeam,
+    deleteTeam,
+    updateTeam,
+    searchTeams
+};
